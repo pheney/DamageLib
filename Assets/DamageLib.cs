@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 /// <summary>
 /// 2017-8-9
-/// Library for managing recuring damage.
+/// Library for managing recurring damage.
 /// </summary>
 public static class DamageLib
 {
@@ -39,7 +39,7 @@ public static class DamageLib
 
     /// <summary>
     /// 2017-8-9
-    /// Call to apply recurring auto-expiring damage to a target.
+    /// Apply recurring auto-expiring damage to a target.
     /// </summary>
     /// <param name="target"></param>
     /// <param name="hitDamage"></param>
@@ -53,7 +53,7 @@ public static class DamageLib
 
     /// <summary>
     /// 2017-8-9
-    /// Call to apply recurring damage that is based on the target's presence
+    /// Apply recurring (non-expiring) damage that is based on the target's presence in
     /// (or absence from) an area. This message begins applying damage to the target.
     /// </summary>
     /// <param name="target"></param>
@@ -67,8 +67,8 @@ public static class DamageLib
 
     /// <summary>
     /// 2017-8-9
-    /// Call to apply recurring damage that is based on the target's presence
-    /// (or absence from) an area. This message ends the application of damage to the target.
+    /// Removes recurring (non-expiring) damage that is based on the target's presence in
+    /// (or absence from) an area. This message terminates the application of damage to the target.
     /// </summary>
     /// <param name="target"></param>
     /// <param name="hitDamage"></param>

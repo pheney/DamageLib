@@ -20,21 +20,36 @@ public static class DamageLib
     #region Public API
 
     /// <summary>
-    /// 2017-8-9
+    /// 2017-8-10
     /// Removes all on-going damage for all targets. Clears all damage lists.
+    /// Returns the number of entries removed.
     /// </summary>
-    public void Clear()
+    public int Clear()
     {
-        //  TODO
+        int result = 0;
+        foreach (int key in damageIndex.Keys)
+        {
+            damageIndex[key].Clear();
+            result++;
+        }
+        return result;
     }
 
     /// <summary>
-    /// 2017-8-9
-    /// Removes all on-going damage for the target. Clears the damage list.
+    /// 2017-8-10
+    /// Removes all on-going damage for the target.
+    /// Returns true when successful.
+    /// Returns false when the target had no on-going damage to clear.
     /// </summary>
-    public void ClearDamageForTarget(GameObject target)
+    public bool ClearDamageForTarget(GameObject target)
     {
-        //  TODO
+        int hash = target.GetHashCode();
+        if (damageIndex.ContainsKey(hash))
+        {
+            damageIndex[hash].Clear();
+            return true;
+        }
+        return false;
     }
 
     /// <summary>
@@ -48,7 +63,9 @@ public static class DamageLib
     /// <param name="damageTypeId"></param>
     public void DamageTarget(GameObject target, float hitDamage, float ratePerSecond, float duration, int damageTypeId)
     {
-        //  TODO
+        PeriodicDamage periodicDamage = new PeriodicDamage(hitDamage, ratePerSecond, duration, damageTypeId);
+        DamageList damageList = GetListForTarget(target);
+        damageList.Add(periodicDamage);
     }
 
     /// <summary>
@@ -81,6 +98,26 @@ public static class DamageLib
 
     #endregion
     #region Private Helpers
+
+    /// <summary>
+    /// 2017-8-10
+    /// Returns the DamageList object associated with the target parameter.
+    /// If there is no list associated, it creates one.
+    /// </summary>
+    /// <param name="target">The target object</param>
+    private DamageList GetListForTarget(GameObject target)
+    {
+        int hash = target.GetHashCode();
+        DamageList result = null;
+        if (damageIndex.ContainsKey(hash)) result = damageIndex[hash];
+        else
+        {
+            result = new DamageList();
+            damageIndex.Add(hash, result);
+        }
+        return result;
+    }
+
     #endregion
     #region Data Structures
 
@@ -138,7 +175,25 @@ public static class DamageLib
         /// </summary>
         private List<PeriodicDamage> damageList;
 
+        /// <summary>
+        /// 2017-8-10
+        /// Constructor
+        /// </summary>
+        public DamageList()
+        {
+            damageList = new List<PeriodicDamage>();
+        }
+
         #region Public API
+
+        /// <summary>
+        /// 2017-8-10
+        /// Remove all PeriodicDamage objects from the list.
+        /// </summary>
+        public void Clear()
+        {
+            damageList.Clear();
+        }
 
         /// <summary>
         /// 2017-8-9

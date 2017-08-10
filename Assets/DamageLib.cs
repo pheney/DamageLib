@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 /// <summary>
 /// 2017-8-9
-/// Library for managing recurring damage.
+/// General library for managing recurring damage.
 /// </summary>
 public static class DamageLib
 {
@@ -53,6 +53,20 @@ public static class DamageLib
     }
 
     /// <summary>
+    /// 2017-8-10
+    /// This sets the name of the method that is called when delivering damage to the
+    /// target.
+    /// </summary>
+    /// <param name="target">GameObject that receives the damage messages</param>
+    /// <param name="message">The name of the method to call when delivering damage</param>
+    /// <param name="broadcast">Should the message be sent via broadcast</param>
+    public void SetDamageMessage(GameObject target, string message, bool broadcast = false)
+    {
+        DamageList damageList = GetListForTarget(target);
+        damageList.SetDamageMessage(message, broadcast);
+    }
+
+    /// <summary>
     /// 2017-8-9
     /// Apply recurring auto-expiring damage to a target.
     /// </summary>
@@ -61,7 +75,7 @@ public static class DamageLib
     /// <param name="ratePerSecond"></param>
     /// <param name="duration"></param>
     /// <param name="damageTypeId"></param>
-    public void DamageTarget(GameObject target, float hitDamage, float ratePerSecond, float duration, int damageTypeId)
+    public void AddDamageToTarget(GameObject target, float hitDamage, float ratePerSecond, float duration, int damageTypeId)
     {
         PeriodicDamage periodicDamage = new PeriodicDamage(hitDamage, ratePerSecond, duration, damageTypeId);
         DamageList damageList = GetListForTarget(target);
@@ -168,12 +182,20 @@ public static class DamageLib
     /// </summary>
     private class DamageList
     {
+        #region Data
+
         /// <summary>
         /// 2017-8-9
         /// When a PeriodicDamage object is added to this structure, its duration value
         /// is overwritten with its expiration time.
         /// </summary>
         private List<PeriodicDamage> damageList;
+        private string damageMessage;
+        private bool broadcast;
+        private float nextUpdate;
+
+        #endregion
+        #region Constructors
 
         /// <summary>
         /// 2017-8-10
@@ -184,6 +206,7 @@ public static class DamageLib
             damageList = new List<PeriodicDamage>();
         }
 
+        #endregion
         #region Public API
 
         /// <summary>
@@ -210,8 +233,9 @@ public static class DamageLib
         /// <summary>
         /// 2017-8-9
         /// Checks the damage list and removes any damage that has exceeded it's duration.
+        /// This should not be called every game Update.
         /// </summary>
-        public void Update()
+        public void IrregularUpdate()
         {
             //  order the damage list by expiration time
             damageList.Sort((left, right) =>
@@ -221,6 +245,21 @@ public static class DamageLib
 
             //  remove any damage objects that have expired
             while (damageList[0].duration < Time.time) damageList.RemoveAt(0);
+
+            //  Store the next update time
+            this.nextUpdate = damageList[0].duration;
+        }
+
+        /// <summary>
+        /// 2017-8-10
+        /// Sets the message that is used to send damage to targets.
+        /// </summary>
+        /// <param name="message">Damage method name</param>
+        /// <param name="broadcast">Transmission type</param>
+        public void SetDamageMessage(string message, bool broadcast = false)
+        {
+            this.damageMessage = message;
+            this.broadcast = broadcast;
         }
 
         #endregion

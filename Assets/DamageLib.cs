@@ -4,6 +4,25 @@ using System.Collections.Generic;
 /// <summary>
 /// 2017-8-9
 /// General library for managing recurring damage.
+/// 
+/// Usage: Called when a projectile impacts a target, setting the target on fire.
+/// 
+/// public void OnColliderEnter(Collision impact) {
+///     GameObject target = impact.collider.gameObject;
+///     DamageLib.AddDamageToTarget(target, dmg, rate, duration, (int)DamageType.Fire);
+/// }
+/// 
+/// Usage: Called when entering or exiting a poisonous area
+/// 
+/// public void OnTriggerEnter(Trigger trespasser) {
+///     GameObject target = trespasser.gameObject;
+///     DamageLib.ZoneDamageStart(target, dmg, rate, (int)DamageType.Poison);
+/// }
+/// 
+/// public void OnTriggerExit(Trigger trespasser) {
+///     GameObject target = trespasser.gameObject;
+///     DamageLib.ZoneDamageEnd(target, dmg, rate, (int)DamageType.Poison);
+/// }  
 /// </summary>
 public static class DamageLib
 {
@@ -50,20 +69,6 @@ public static class DamageLib
             return true;
         }
         return false;
-    }
-
-    /// <summary>
-    /// 2017-8-10
-    /// This sets the name of the method that is called when delivering damage to the
-    /// target.
-    /// </summary>
-    /// <param name="target">GameObject that receives the damage messages</param>
-    /// <param name="message">The name of the method to call when delivering damage</param>
-    /// <param name="broadcast">Should the message be sent via broadcast</param>
-    public void SetDamageMessage(GameObject target, string message, bool broadcast = false)
-    {
-        DamageList damageList = GetListForTarget(target);
-        damageList.SetDamageMessage(message, broadcast);
     }
 
     /// <summary>
@@ -172,10 +177,7 @@ public static class DamageLib
             return new DiscreteDamage(damagePerHit, damageTypeId);
         }
     }
-
-    #endregion
-    #region Data Structure Manager
-
+    
     /// <summary>
     /// 2017-8-9
     /// Manages a list of periodic damage objects.
@@ -190,8 +192,6 @@ public static class DamageLib
         /// is overwritten with its expiration time.
         /// </summary>
         private List<PeriodicDamage> damageList;
-        private string damageMessage;
-        private bool broadcast;
         private float nextUpdate;
 
         #endregion
@@ -248,18 +248,6 @@ public static class DamageLib
 
             //  Store the next update time
             this.nextUpdate = damageList[0].duration;
-        }
-
-        /// <summary>
-        /// 2017-8-10
-        /// Sets the message that is used to send damage to targets.
-        /// </summary>
-        /// <param name="message">Damage method name</param>
-        /// <param name="broadcast">Transmission type</param>
-        public void SetDamageMessage(string message, bool broadcast = false)
-        {
-            this.damageMessage = message;
-            this.broadcast = broadcast;
         }
 
         #endregion

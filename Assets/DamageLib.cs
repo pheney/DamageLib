@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 /// <summary>
 /// 2017-8-9
@@ -33,7 +34,7 @@ public static class DamageLib
     /// Key: Hashcode of the target GameObject
     /// Value: DamageList object that contains all the 'on-going damage' for the target.
     /// </summary>
-    private Dictionary<int, DamageList> damageIndex;
+    private static Dictionary<int, DamageList> damageIndex;
 
     #endregion
     #region Public API
@@ -43,7 +44,7 @@ public static class DamageLib
     /// Removes all on-going damage for all targets. Clears all damage lists.
     /// Returns the number of entries removed.
     /// </summary>
-    public int Clear()
+    public static int Clear()
     {
         int result = 0;
         foreach (int key in damageIndex.Keys)
@@ -60,7 +61,7 @@ public static class DamageLib
     /// Returns true when successful.
     /// Returns false when the target had no on-going damage to clear.
     /// </summary>
-    public bool ClearDamageForTarget(GameObject target)
+    public static bool ClearDamageForTarget(GameObject target)
     {
         int hash = target.GetHashCode();
         if (damageIndex.ContainsKey(hash))
@@ -80,7 +81,7 @@ public static class DamageLib
     /// <param name="ratePerSecond"></param>
     /// <param name="duration"></param>
     /// <param name="damageTypeId"></param>
-    public void AddDamageToTarget(GameObject target, float hitDamage, float ratePerSecond, float duration, int damageTypeId)
+    public static void AddDamageToTarget(GameObject target, float hitDamage, float ratePerSecond, float duration, int damageTypeId)
     {
         PeriodicDamage periodicDamage = new PeriodicDamage(hitDamage, ratePerSecond, duration, damageTypeId);
         DamageList damageList = GetListForTarget(target);
@@ -96,7 +97,7 @@ public static class DamageLib
     /// <param name="hitDamage"></param>
     /// <param name="ratePerSecond"></param>
     /// <param name="damageTypeId"></param>
-    public void ZoneDamageStart(GameObject target, float hitDamage, float ratePerSecond, int damageTypeId)
+    public static void ZoneDamageStart(GameObject target, float hitDamage, float ratePerSecond, int damageTypeId)
     {
         //  TODO
     }
@@ -110,7 +111,7 @@ public static class DamageLib
     /// <param name="hitDamage"></param>
     /// <param name="ratePerSecond"></param>
     /// <param name="damageTypeId"></param>
-    public void ZoneDamageEnd(GameObject target, float hitDamage, float ratePerSecond, int damageTypeId)
+    public static void ZoneDamageEnd(GameObject target, float hitDamage, float ratePerSecond, int damageTypeId)
     {
         //  TODO
     }
@@ -124,7 +125,7 @@ public static class DamageLib
     /// If there is no list associated, it creates one.
     /// </summary>
     /// <param name="target">The target object</param>
-    private DamageList GetListForTarget(GameObject target)
+    private static DamageList GetListForTarget(GameObject target)
     {
         int hash = target.GetHashCode();
         DamageList result = null;
@@ -160,6 +161,7 @@ public static class DamageLib
         public float hitsPerSecond;
         public float duration;
         public int damageTypeId;
+        public float timestamp;
 
         //  constructors
         public PeriodicDamage() { }
@@ -221,12 +223,10 @@ public static class DamageLib
         /// <summary>
         /// 2017-8-9
         /// Adds the damage object to the internal damage list.
-        /// The damage object's 'duration' value is converted to an
-        /// expiration time-stamp.
         /// </summary>
         public void Add(PeriodicDamage periodicDamage)
         {
-            periodicDamage.duration = GetExpireTime(periodicDamage);
+            SetTimeStamp(periodicDamage);
             damageList.Add(periodicDamage);
         }
 
@@ -244,14 +244,33 @@ public static class DamageLib
             });
 
             //  remove any damage objects that have expired
-            while (damageList[0].duration < Time.time) damageList.RemoveAt(0);
+            while (GetExpireTime(damageList[0])< Time.time) damageList.RemoveAt(0);
 
             //  Store the next update time
-            this.nextUpdate = damageList[0].duration;
+            this.nextUpdate = GetExpireTime(damageList[0]);
+        }
+
+        public DiscreteDamage[] GetCurrentDamage(float currentTime)
+        {
+            DiscreteDamage[] damageArray = null;
+            
+            //  TODO
+
+            return damageArray;
         }
 
         #endregion
         #region Private Helpers
+
+        /// <summary>
+        /// 2017-8-12
+        /// Sets the object's timestamp to the current time.
+        /// </summary>
+        /// <param name="periodicDamage">A recurring damage object</param>
+        private void SetTimeStamp(PeriodicDamage periodicDamage)
+        {
+            periodicDamage.timestamp = Time.time;
+        }
 
         /// <summary>
         /// 2017-8-9
@@ -260,7 +279,7 @@ public static class DamageLib
         /// </summary>
         private float GetExpireTime(PeriodicDamage periodicDamage)
         {
-            return Time.time + periodicDamage.duration;
+            return Time.time + periodicDamage.timestamp;
         }
 
         #endregion

@@ -159,9 +159,55 @@ public static class DamageLib
     {
         public float damagePerHit;
         public float hitsPerSecond;
-        public float duration;
         public int damageTypeId;
-        public float timestamp;
+
+        /// <summary>
+        /// 2017-8-13
+        /// Duration of the effect (in seconds)
+        /// </summary>
+        public float duration;
+
+        /// <summary>
+        /// 2017-8-13
+        /// Returns the expected timestamp for the effect to end. If the
+        /// current time has passed this time, then the effect should be
+        /// removed from the target.
+        /// </summary>
+        public float expireTime
+        {
+            get { return this.createTime + this.duration; }
+        }
+
+        /// <summary>
+        /// 2017-8-13
+        /// Timestamp when the damage object is created
+        /// </summary>
+        public readonly float createTime;
+
+        /// <summary>
+        /// 2017-8-13
+        /// Timestamp when the damage effect was last applied.
+        /// </summary>
+        public float lastHitTime { set; private get; }
+
+        /// <summary>
+        /// 2017-8-13
+        /// Returns the expected timestamp for the next hit. If the
+        /// current time has passed this time, then a hit is due.
+        /// </summary>
+        public float nextHitTime
+        {
+            get
+            {
+                return this.lastHitTime + this.interHitDelay;
+            }
+        }
+
+        /// <summary>
+        /// 2017-8-13
+        /// The time duration (in seconds) between hits when the game is running.
+        /// </summary>
+        private float interHitDelay;
 
         //  constructors
         public PeriodicDamage() { }
@@ -171,13 +217,15 @@ public static class DamageLib
             this.hitsPerSecond = hitsPerSecond;
             this.duration = duration;
             this.damageTypeId = damageTypeId;
+            this.interHitDelay = 1f / hitsPerSecond;
+            this.createTime = Time.time;
         }
 
         //  converters
         public DiscreteDamage ToDiscreteDamage()
         {
             return new DiscreteDamage(damagePerHit, damageTypeId);
-        }
+        }       
     }
     
     /// <summary>
@@ -249,15 +297,7 @@ public static class DamageLib
             //  Store the next update time
             this.nextUpdate = GetExpireTime(damageList[0]);
         }
-
-        public DiscreteDamage[] GetCurrentDamage(float currentTime)
-        {
-            DiscreteDamage[] damageArray = null;
-            
-            //  TODO
-
-            return damageArray;
-        }
+        
 
         #endregion
         #region Private Helpers
@@ -269,7 +309,7 @@ public static class DamageLib
         /// <param name="periodicDamage">A recurring damage object</param>
         private void SetTimeStamp(PeriodicDamage periodicDamage)
         {
-            periodicDamage.timestamp = Time.time;
+            periodicDamage.createTime = Time.time;
         }
 
         /// <summary>
@@ -279,7 +319,7 @@ public static class DamageLib
         /// </summary>
         private float GetExpireTime(PeriodicDamage periodicDamage)
         {
-            return Time.time + periodicDamage.timestamp;
+            return Time.time + periodicDamage.createTime;
         }
 
         #endregion

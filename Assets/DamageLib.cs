@@ -150,6 +150,11 @@ public static class DamageLib
         public DiscreteDamage() { }
         public DiscreteDamage(float hitDamage, int damageTypeId)
         {
+            SetData(hitDamage, damageTypeId);
+        }
+
+        public void SetData(float hitDamage, int damageTypeId)
+        {
             this.hitDamage = hitDamage;
             this.damageTypeId = damageTypeId;
         }
@@ -212,6 +217,11 @@ public static class DamageLib
         //  constructors
         public PeriodicDamage() { }
         public PeriodicDamage(float damagePerHit, float hitsPerSecond, float duration, int damageTypeId)
+        {
+            SetData(damagePerHit, hitsPerSecond, duration, damageTypeId);
+        }
+
+        public void SetData(float damagePerHit, float hitsPerSecond, float duration, int damageTypeId)
         {
             this.damagePerHit = damagePerHit;
             this.hitsPerSecond = hitsPerSecond;

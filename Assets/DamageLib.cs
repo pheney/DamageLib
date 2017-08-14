@@ -182,7 +182,7 @@ public static class DamageLib
         /// 2017-8-13
         /// Timestamp when the damage object is created
         /// </summary>
-        public readonly float createTime;
+        public float createTime;
 
         /// <summary>
         /// 2017-8-13
